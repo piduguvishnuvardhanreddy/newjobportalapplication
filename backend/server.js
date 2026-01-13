@@ -9,8 +9,14 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+// Trust proxy is required for secure cookies on Render/Heroku
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
+
+// DEBUGGING: Log all requests
+
 app.use(cors({
     origin: process.env.FRONTEND_URL || 'http://localhost:5173', // Render URL or Vite default port
     credentials: true,
