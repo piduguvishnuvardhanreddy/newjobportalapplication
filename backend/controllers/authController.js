@@ -156,3 +156,20 @@ exports.updateDetails = async (req, res) => {
         res.status(500).json({ message: error.message });
     }
 };
+
+// @desc    Google OAuth Callback
+// @route   GET /api/auth/google/callback
+// @access  Public
+exports.googleCallback = (req, res) => {
+    const token = generateToken(req.user._id);
+
+    res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax', // Required for cross-site (Vercel -> Render)
+        maxAge: 30 * 24 * 60 * 60 * 1000 // 30 days
+    });
+
+    // Redirect to frontend dashboard or home
+    res.redirect(process.env.FRONTEND_URL || 'http://localhost:5173');
+};

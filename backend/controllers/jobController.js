@@ -63,6 +63,23 @@ exports.createJob = async (req, res) => {
 
         const job = await Job.create(req.body);
 
+        // Send Email to ALL users
+        // Send Email to ALL users
+        const users = await require('../models/User').find({ role: 'user' }); // Only send to job seekers? "send to every user"
+
+        // Add the creator (admin) to the list so they get a copy
+        users.push(req.user);
+
+        console.log(`[JobBroadcast] Found ${users.length} users (including admin) to email.`);
+
+        const emailService = require('../services/emailService');
+
+        // Non-blocking email sending
+        console.log('[JobBroadcast] Initiating sendJobPostEmail...');
+        emailService.sendJobPostEmail(users, job)
+            .then(() => console.log('[JobBroadcast] Email broadcast completed successfully.'))
+            .catch(err => console.error('[JobBroadcast] Email broadcast failed:', err));
+
         res.status(201).json({
             success: true,
             job
@@ -121,6 +138,39 @@ exports.deleteJob = async (req, res) => {
         await job.deleteOne();
 
         res.status(200).json({ success: true, message: 'Job removed' });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+// @desc    Submit feedback (Not Interested)
+// @route   POST /api/jobs/:id/feedback
+// @access  Private
+exports.submitFeedback = async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const jobId = req.params.id;
+        const userId = req.user.id;
+
+        const job = await Job.findById(jobId).populate('createdBy', 'email');
+        if (!job) {
+            return res.status(404).json({ message: 'Job not found' });
+        }
+
+        const emailService = require('../services/emailService');
+        const feedbackData = {
+            reason,
+            jobId,
+            userId
+        };
+
+        // Send logic: send to admin/creator
+        // Assuming job.createdBy has the email
+        const adminEmail = job.createdBy ? job.createdBy.email : process.env.ADMIN_EMAIL; // Fallback
+
+        await emailService.sendFeedbackEmail(adminEmail, feedbackData);
+
+        res.status(200).json({ success: true, message: 'Feedback submitted' });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

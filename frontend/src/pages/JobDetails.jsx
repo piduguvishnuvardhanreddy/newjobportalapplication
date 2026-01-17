@@ -69,12 +69,34 @@ const JobDetails = () => {
                 <div className="p-8">
                     <div className="flex justify-between items-start">
                         <div>
-                            <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
+                            <div className="flex items-center gap-4 mb-2">
+                                {job.companyLogo && (
+                                    <img src={job.companyLogo} alt={job.company} className="w-16 h-16 object-contain rounded-md bg-gray-50 p-1" />
+                                )}
+                                <div>
+                                    <h1 className="text-3xl font-bold text-gray-900">{job.title}</h1>
+                                    <p className="text-lg text-gray-600 font-medium">{job.company}</p>
+                                </div>
+                            </div>
                             <div className="mt-2 flex items-center space-x-4 text-gray-500">
                                 <span className="flex items-center"><FaBriefcase className="mr-1" /> {job.jobType}</span>
                                 <span className="flex items-center"><FaMapMarkerAlt className="mr-1" /> {job.location}</span>
+                                {job.salary && <span className="flex items-center font-medium text-green-700 bg-green-50 px-2 py-0.5 rounded">Salary: {job.salary}</span>}
+                                {job.openings && <span className="flex items-center text-gray-700 bg-gray-100 px-2 py-0.5 rounded">Openings: {job.openings}</span>}
+                                {job.workLocation && <span className="flex items-center text-blue-700 bg-blue-50 px-2 py-0.5 rounded">{job.workLocation}</span>}
                                 <span className="flex items-center"><FaCalendarAlt className="mr-1" /> Deadline: {new Date(job.deadline).toLocaleDateString()}</span>
                             </div>
+                            {job.serviceAgreement && (
+                                <div className="mt-3 bg-yellow-50 border-l-4 border-yellow-400 p-2">
+                                    <div className="flex">
+                                        <div className="ml-3">
+                                            <p className="text-sm text-yellow-700">
+                                                <span className="font-bold">Notice:</span> This job requires a Service Agreement.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                         {isExpired && (
                             <span className="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">
@@ -91,11 +113,15 @@ const JobDetails = () => {
                     <div className="mt-8">
                         <h3 className="text-xl font-semibold text-gray-900 mb-3">Required Skills</h3>
                         <div className="flex flex-wrap gap-2">
-                            {job.skills.map((skill, index) => (
-                                <span key={index} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
-                                    {skill}
-                                </span>
-                            ))}
+                            {job.skills && Array.isArray(job.skills) && job.skills.length > 0 ? (
+                                job.skills.map((skill, index) => (
+                                    <span key={index} className="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm font-medium">
+                                        {skill}
+                                    </span>
+                                ))
+                            ) : (
+                                <span className="text-gray-500">No specific skills required.</span>
+                            )}
                         </div>
                     </div>
 

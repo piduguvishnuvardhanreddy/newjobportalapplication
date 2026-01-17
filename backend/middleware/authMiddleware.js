@@ -4,31 +4,31 @@ const User = require('../models/User');
 exports.protect = async (req, res, next) => {
     let token;
 
-    if (req.cookies.token) {
-        token = req.cookies.token;
-    } else if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-        // Backup if cookie fails or for API testing
+    if (
+        req.headers.authorization &&
+        req.headers.authorization.startsWith('Bearer')
+    ) {
         token = req.headers.authorization.split(' ')[1];
+    } else if (req.cookies.token) {
+        token = req.cookies.token;
     }
 
     if (!token) {
-        console.log('Middleware Error: No token found in cookies or headers');
-        return res.status(401).json({ message: 'Not authorized, no token provided' });
+        return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
     }
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
         req.user = await User.findById(decoded.id);
 
         if (!req.user) {
-            console.log('Middleware Error: Token valid but user not found in DB');
-            return res.status(401).json({ message: 'Not authorized, user not found' });
+            return res.status(401).json({ success: false, message: 'Not authorized, user not found' });
         }
 
         next();
-    } catch (error) {
-        console.error('Middleware Error: Token verification failed:', error.message);
-        return res.status(401).json({ message: 'Not authorized, token failed' });
+    } catch (err) {
+        return res.status(401).json({ success: false, message: 'Not authorized to access this route' });
     }
 };
 

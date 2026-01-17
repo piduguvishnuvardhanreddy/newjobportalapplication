@@ -10,8 +10,14 @@ const CreateJob = () => {
         description: '',
         skills: '',
         location: '',
+        salary: '',
+        company: '',
+        companyLogo: '',
         jobType: 'Full-time',
-        deadline: ''
+        deadline: '',
+        openings: 1,
+        workLocation: 'Onsite',
+        serviceAgreement: false
     });
 
     const handleSubmit = async (e) => {
@@ -65,6 +71,76 @@ const CreateJob = () => {
                                     value={formData.location}
                                     onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                                 />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 col-span-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Company Name</label>
+                                    <input
+                                        type="text"
+                                        required
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={formData.company}
+                                        onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Company Logo URL</label>
+                                    <input
+                                        type="text"
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={formData.companyLogo}
+                                        onChange={(e) => setFormData({ ...formData, companyLogo: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700">Salary (e.g. $50k - $80k)</label>
+                                <input
+                                    type="text"
+                                    className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                    value={formData.salary}
+                                    onChange={(e) => setFormData({ ...formData, salary: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 col-span-2">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Openings</label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        required
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={formData.openings}
+                                        onChange={(e) => setFormData({ ...formData, openings: e.target.value })}
+                                    />
+                                </div>
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700">Work Location</label>
+                                    <select
+                                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
+                                        value={formData.workLocation}
+                                        onChange={(e) => setFormData({ ...formData, workLocation: e.target.value })}
+                                    >
+                                        <option value="Onsite">Onsite</option>
+                                        <option value="Remote">Remote</option>
+                                        <option value="Hybrid">Hybrid</option>
+                                    </select>
+                                </div>
+                                <div className="flex items-center mt-6">
+                                    <input
+                                        id="serviceAgreement"
+                                        type="checkbox"
+                                        className="h-4 w-4 text-indigo-600 focus:ring-indigo-500 border-gray-300 rounded"
+                                        checked={formData.serviceAgreement}
+                                        onChange={(e) => setFormData({ ...formData, serviceAgreement: e.target.checked })}
+                                    />
+                                    <label htmlFor="serviceAgreement" className="ml-2 block text-sm text-gray-900">
+                                        Service Agreement Required?
+                                    </label>
+                                </div>
                             </div>
 
                             <div>

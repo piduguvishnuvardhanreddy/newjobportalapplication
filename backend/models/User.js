@@ -15,6 +15,11 @@ const userSchema = new mongoose.Schema({
             'Please add a valid email'
         ]
     },
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true // Allows null/undefined values to duplicate
+    },
     password: {
         type: String,
         required: [true, 'Please add a password'],

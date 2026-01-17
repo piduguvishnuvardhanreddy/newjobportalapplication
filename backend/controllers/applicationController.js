@@ -114,6 +114,15 @@ exports.updateApplicationStatus = async (req, res) => {
             return res.status(404).json({ message: 'Application not found' });
         }
 
+        // Send Email Notification
+        const emailService = require('../services/emailService');
+        // Populate to get email
+        await application.populate('applicant', 'name email');
+        await application.populate('job', 'title');
+
+        emailService.sendApplicationUpdateEmail(application.applicant, status, application.job.title)
+            .catch(err => console.error('Status email failed:', err));
+
         res.status(200).json({
             success: true,
             application
