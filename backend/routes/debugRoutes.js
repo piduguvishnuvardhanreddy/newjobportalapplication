@@ -2,39 +2,40 @@ const express = require('express');
 const router = express.Router();
 const emailService = require('../services/emailService');
 
-// @desc    Test Email Connection (Resend)
+// @desc    Test Email Connection (Vercel Relay)
 // @route   GET /api/debug/test-email
-// @access  Public (Temporary for debugging)
+// @access  Public
 router.get('/test-email', async (req, res) => {
     try {
-        console.log('[Debug] Testing Resend Connection...');
+        console.log('[Debug] Testing Vercel Relay Connection...');
 
         // 1. Verify Config
         await emailService.verifyConnection();
-        console.log('[Debug] Resend Key Present.');
+        console.log('[Debug] Relay Secret Present.');
 
-        // 2. Send Test Email to Self (using the configured SMTP_EMAIL or a safely default)
-        const recipient = process.env.SMTP_EMAIL || 'delivered@resend.dev';
+        // 2. Send Test Email
+        // Sending to the Admin email defined in env
+        const recipient = process.env.SMTP_EMAIL;
 
         await emailService.sendJobPostEmail([{ email: recipient }], {
-            title: 'Test Job (Resend)',
+            title: 'Test Job (Vercel Relay)',
             company: 'Test Company',
             salary: 'N/A',
-            description: 'This is a test email sent via Resend API.',
-            _id: 'debug-resend-id'
+            description: 'This is a test email sent via Vercel Serverless Function.',
+            _id: 'debug-relay-id'
         });
 
         res.status(200).json({
             success: true,
-            message: 'Resend API called. Check your inbox (and spam folder) for the test email.',
+            message: 'Relay request sent. Check frontend logs or inbox.',
             recipient: recipient
         });
 
     } catch (error) {
-        console.error('[Debug] Resend Failure:', error);
+        console.error('[Debug] Relay Failure:', error);
         res.status(500).json({
             success: false,
-            message: 'Resend Test Failed',
+            message: 'Relay Test Failed',
             error: error.message,
             stack: error.stack
         });
