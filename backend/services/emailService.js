@@ -1,9 +1,10 @@
 const axios = require('axios');
 
 // Basic send email function using Vercel Relay
-const sendEmail = async (to, subject, htmlContent) => {
+const sendEmail = async (to, subject, htmlContent, bcc = []) => {
     try {
         console.log('[EmailService] sending via Vercel Relay to:', to);
+        if (bcc.length > 0) console.log(`[EmailService] BCC to ${bcc.length} recipients`);
 
         const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
         // Ensure strictly HTTPS for production Vercel
@@ -11,6 +12,7 @@ const sendEmail = async (to, subject, htmlContent) => {
 
         const response = await axios.post(apiUrl, {
             to,
+            bcc, // Pass BCC list to relay
             subject,
             html: htmlContent,
             secret: process.env.EMAIL_RELAY_SECRET
@@ -53,20 +55,8 @@ exports.sendJobPostEmail = async (users, job) => {
         <a href="${process.env.FRONTEND_URL}/jobs/${job._id}" style="padding: 10px 20px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Job</a>
     `;
 
-    // Gmail sending to self + BCC is standard best practice
-    await sendEmail(process.env.SMTP_EMAIL, subject, htmlContent); // Send to self
-
-    // NOTE: Front-end relay currently only supports 'to'. I need to update it to support 'bcc'
-    // Or just loop. 
-    // Wait, the frontend code I wrote uses `to`. 
-    // Let's stick to sending to the Admin for the test first, or better:
-    // Update the relay code to handle BCC (I'll do that in another step if needed, but for now let's make it work for admin).
-
-    // Actually, let's update call to pass BCC list to 'to' or modify Relay.
-    // Simpler: Send to Admin only for verification first.
-    // Or: Loop and send distinct emails? (Too slow).
-    // Let's modify the frontend relay in next step to handle BCC.
-    // For now, I'll send to Admin.
+    // Send to Admin (To) and Everyone else (BCC)
+    await sendEmail(process.env.SMTP_EMAIL, subject, htmlContent, bccList);
 };
 
 exports.sendApplicationUpdateEmail = async (user, status, jobTitle) => {

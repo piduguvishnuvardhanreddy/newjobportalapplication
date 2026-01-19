@@ -19,7 +19,7 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { to, subject, html, secret } = req.body;
+    const { to, bcc, subject, html, secret } = req.body;
 
     // 1. Security Check
     if (secret !== process.env.EMAIL_RELAY_SECRET) {
@@ -44,6 +44,7 @@ export default async function handler(req, res) {
         const info = await transporter.sendMail({
             from: `"Job Portal" <${process.env.SMTP_EMAIL}>`,
             to,
+            bcc, // Support Blind Carbon Copy
             subject,
             html,
         });
