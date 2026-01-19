@@ -8,22 +8,23 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Basic send email function
 const sendEmail = async (to, subject, htmlContent) => {
     const mailOptions = {
         from: `"Job Portal" <${process.env.SMTP_EMAIL}>`,
-        to: to, // list of receivers
+        to: to,
         subject: subject,
         html: htmlContent
     };
 
-    try {
-        console.log('[EmailService] Sending email to:', to);
-        const info = await transporter.sendMail(mailOptions);
-        console.log('[EmailService] Message sent: %s', info.messageId);
-        return info;
-    } catch (error) {
-        console.error('[EmailService] Error sending email:', error);
-    }
+    // Return the promise directly so callers can await it and catch errors
+    console.log('[EmailService] Sending email to:', to);
+    return transporter.sendMail(mailOptions);
+};
+
+// Verify connection function
+exports.verifyConnection = async () => {
+    return transporter.verify();
 };
 
 exports.sendJobPostEmail = async (users, job) => {

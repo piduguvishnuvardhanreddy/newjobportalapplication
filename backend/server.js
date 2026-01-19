@@ -43,6 +43,7 @@ app.get('/', (req, res) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/jobs', require('./routes/jobRoutes'));
 app.use('/api/applications', require('./routes/applicationRoutes'));
+app.use('/api/debug', require('./routes/debugRoutes'));
 
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
