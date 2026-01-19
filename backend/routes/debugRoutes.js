@@ -2,44 +2,41 @@ const express = require('express');
 const router = express.Router();
 const emailService = require('../services/emailService');
 
-// @desc    Test Email Connection
+// @desc    Test Email Connection (Resend)
 // @route   GET /api/debug/test-email
 // @access  Public (Temporary for debugging)
 router.get('/test-email', async (req, res) => {
     try {
-        console.log('[Debug] Testing SMTP Connection...');
+        console.log('[Debug] Testing Resend Connection...');
 
-        // 1. Verify Login
+        // 1. Verify Config
         await emailService.verifyConnection();
-        console.log('[Debug] SMTP Connection Verified.');
+        console.log('[Debug] Resend Key Present.');
 
-        // 2. Send Test Email to Self
-        const testSubject = 'Test Email from Render Debugger';
-        const testHtml = '<h1>It Works!</h1><p>This is a test email to verify your SMTP settings.</p>';
+        // 2. Send Test Email to Self (using the configured SMTP_EMAIL or a safely default)
+        const recipient = process.env.SMTP_EMAIL || 'delivered@resend.dev';
 
-        // Send to the SMTP_EMAIL itself
-        await emailService.sendJobPostEmail([{ email: process.env.SMTP_EMAIL }], {
-            title: 'Test Job',
+        await emailService.sendJobPostEmail([{ email: recipient }], {
+            title: 'Test Job (Resend)',
             company: 'Test Company',
             salary: 'N/A',
-            description: 'Test Description',
-            _id: 'debug-id'
+            description: 'This is a test email sent via Resend API.',
+            _id: 'debug-resend-id'
         });
 
         res.status(200).json({
             success: true,
-            message: 'SMTP connection verified and test email attempted. Check server logs for send result.'
+            message: 'Resend API called. Check your inbox (and spam folder) for the test email.',
+            recipient: recipient
         });
 
     } catch (error) {
-        console.error('[Debug] SMTP Failure:', error);
+        console.error('[Debug] Resend Failure:', error);
         res.status(500).json({
             success: false,
-            message: 'SMTP Connection Failed',
+            message: 'Resend Test Failed',
             error: error.message,
-            stack: error.stack,
-            code: error.code,
-            command: error.command
+            stack: error.stack
         });
     }
 });

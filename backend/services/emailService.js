@@ -1,36 +1,39 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend');
 
-const transporter = nodemailer.createTransport({
-    host: 'smtp.gmail.com', // Explicit host
-    port: 465,              // SSL port
-    secure: true,           // true for 465
-    auth: {
-        user: process.env.SMTP_EMAIL,
-        pass: process.env.SMTP_PASSWORD
-    }
-});
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Basic send email function
 const sendEmail = async (to, subject, htmlContent) => {
-    const mailOptions = {
-        from: `"Job Portal" <${process.env.SMTP_EMAIL}>`,
-        to: to,
-        subject: subject,
-        html: htmlContent
-    };
-
-    // Return the promise directly so callers can await it and catch errors
-    console.log('[EmailService] Sending email to:', to);
-    return transporter.sendMail(mailOptions);
+    try {
+        console.log('[EmailService] Sending email to:', to);
+        const data = await resend.emails.send({
+            from: 'Job Portal <onboarding@resend.dev>', // Use default Resend domain for testing
+            to: to,
+            subject: subject,
+            html: htmlContent
+        });
+        console.log('[EmailService] Email sent successfully:', data);
+        return data;
+    } catch (error) {
+        console.error('[EmailService] Error sending email:', error);
+        throw error;
+    }
 };
 
-// Verify connection function
+// Verify connection function (Resend doesn't have a verify method like SMTP, so we check API key presence)
 exports.verifyConnection = async () => {
-    return transporter.verify();
+    if (!process.env.RESEND_API_KEY) {
+        throw new Error('RESEND_API_KEY is missing');
+    }
+    return true;
 };
 
 exports.sendJobPostEmail = async (users, job) => {
     // Collect all emails
+    // Resend free tier sends to only verified email (onboarding@resend.dev to verified email)
+    // or if domain is verified.
+    // For MVP/Debug: We can usually send TO the registered admin email.
+
     const bccList = users.map(u => u.email);
 
     if (bccList.length === 0) {
@@ -49,23 +52,23 @@ exports.sendJobPostEmail = async (users, job) => {
         <a href="${process.env.FRONTEND_URL}/jobs/${job._id}" style="padding: 10px 20px; background: #4F46E5; color: white; text-decoration: none; border-radius: 5px;">View Job</a>
     `;
 
-    // Send using BCC to protect privacy and send in one go
-    // Note: Gmail has limits (500/day, 100 recipients per mail approx). 
-    // For MVP this is fine.
-
-    // We send TO the sender (or a no-reply) and BCC everyone else
-    const mailOptions = {
-        from: `"Job Portal" <${process.env.SMTP_EMAIL}>`,
-        to: process.env.SMTP_EMAIL, // Send to self
-        bcc: bccList, // BCC all users
-        subject: subject,
-        html: htmlContent
-    };
-
     try {
-        console.log(`[EmailService] Broadcasting to ${bccList.length} users via Gmail BCC...`);
-        const info = await transporter.sendMail(mailOptions);
-        console.log('[EmailService] Broadcast sent: %s', info.messageId);
+        console.log(`[EmailService] Broadcasting to ${bccList.length} users via Resend...`);
+
+        // Resend constraint: 'to' field is required. 'bcc' is optional.
+        // For mass sending, using bcc is good, but Resend limits might apply.
+        // Best practice: Send individual emails or use 'bq' (batch queue) if enterprise.
+        // Simple approach for now: Send to self, BCC others.
+
+        const data = await resend.emails.send({
+            from: 'Job Portal <onboarding@resend.dev>',
+            to: process.env.SMTP_EMAIL || 'delivered@resend.dev', // Fallback
+            bcc: bccList,
+            subject: subject,
+            html: htmlContent
+        });
+
+        console.log('[EmailService] Broadcast sent:', data);
     } catch (error) {
         console.error('[EmailService] Broadcast failed:', error);
     }
