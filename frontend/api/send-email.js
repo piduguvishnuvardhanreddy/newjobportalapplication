@@ -21,6 +21,13 @@ export default async function handler(req, res) {
 
     const { to, bcc, subject, html, secret } = req.body;
 
+    console.log('[Relay] Request received');
+    console.log(`[Relay] To: ${to}`);
+    console.log(`[Relay] BCC Count: ${bcc ? (Array.isArray(bcc) ? bcc.length : 'Not an array') : 'Undefined'}`);
+    if (Array.isArray(bcc) && bcc.length > 0) {
+        console.log(`[Relay] BCC Preview: ${bcc.slice(0, 3).join(', ')}...`);
+    }
+
     // 1. Security Check
     if (secret !== process.env.EMAIL_RELAY_SECRET) {
         return res.status(401).json({ error: 'Unauthorized: Invalid Secret' });
